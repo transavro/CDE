@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="50dp"
+    android:layout_height="50dp"
+    android:padding="1dp"
+    android:id="@+id/parentView"
+    android:focusable="true"
+    android:background="@drawable/drawable_keyboard_selector"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/info_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:background="#242424"
+        android:gravity="center" />
+
+</RelativeLayout>
+
+<!--
+ android:background="#242424"
+-->

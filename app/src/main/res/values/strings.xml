@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">CDE</string>
+
+    <string name="search">Search</string>
+    <string name="seach_content">Search for shows , movies &amp; sports</string>
+
+</resources>
