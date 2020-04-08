@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/linKayboard"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="145dp"
+        android:orientation="vertical">
+
+<!--        <TextView-->
+<!--            android:id="@+id/tvSearchText"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="@string/search"-->
+<!--            android:textColor="@color/white"-->
+<!--            android:textSize="30sp" />-->
+
+        <RelativeLayout
+            android:id="@+id/RelSearchLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:layout_below="@+id/tvSearchText"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/search_drawable">
+
+            <EditText
+                android:id="@+id/edtSearchView"
+                android:layout_width="180dp"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:background="@null"
+                android:enabled="false"
+                android:cursorVisible="true"
+                android:hint="@string/search"
+                android:textColor="@color/dark_grey"
+                android:textColorHint="@color/dark_grey"
+                android:textSize="18sp"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:layout_marginStart="10dp"
+            android:layout_below="@+id/tvSearchText"
+            android:layout_toEndOf="@id/RelSearchLayout"
+            android:layout_marginTop="20dp">
+
+            <Button
+                android:id="@+id/btnSearch"
+                android:layout_width="98dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="2dp"
+                android:layout_marginTop="1dp"
+                android:background="@drawable/drawable_button_selector"
+                android:focusable="true"
+                android:text="Search"
+                android:onClick="searchMe"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+
+        </RelativeLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvKeyboardKeys"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/RelSearchLayout"
+            android:layout_marginTop="10dp" />
+
+        <Button
+            android:id="@+id/btnDelete"
+            android:layout_width="98dp"
+            android:layout_height="40dp"
+            android:layout_below="@+id/rvKeyboardKeys"
+            android:layout_marginLeft="1dp"
+            android:layout_marginTop="1dp"
+            android:background="@drawable/drawable_button_selector"
+            android:drawableStart="@android:drawable/ic_menu_delete"
+            android:focusable="true"
+            android:paddingLeft="30dip" />
+
+        <Button
+            android:id="@+id/btnSpace"
+            android:layout_width="98dp"
+            android:layout_height="40dp"
+            android:layout_below="@+id/rvKeyboardKeys"
+            android:layout_marginLeft="2dp"
+            android:layout_marginTop="1dp"
+            android:layout_toRightOf="@+id/btnDelete"
+            android:background="@drawable/drawable_button_selector"
+            android:focusable="true"
+            android:text="Space"
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="97dp"
+            android:layout_height="40dp"
+            android:layout_below="@+id/rvKeyboardKeys"
+            android:layout_marginLeft="2dp"
+            android:layout_marginTop="1dp"
+            android:layout_toRightOf="@+id/btnSpace"
+            android:background="@drawable/drawable_button_selector"
+            android:drawableStart="@android:drawable/ic_input_delete"
+            android:focusable="true"
+            android:paddingLeft="30dip" />
+
+
+    </RelativeLayout>
+
+    <fragment
+        android:layout_toEndOf="@id/linKayboard"
+        android:layout_marginStart="0dp"
+        android:id="@+id/searchFragment"
+        android:name="com.cloudwalker.search.SearchFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</RelativeLayout>
+
+
+
+
+<!--<RelativeLayout-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="match_parent"-->
+<!--android:layout_marginLeft="10dp"-->
+<!--android:layout_marginTop="95dp"-->
+<!--android:layout_marginBottom="10dp"-->
+<!--android:layout_toRightOf="@+id/linKayboard"-->
+<!--android:visibility="visible">-->
+
+<!--<ScrollView-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    android:scrollbars="none"-->
+<!--    android:fillViewport="true">-->
+
+<!--    <RelativeLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
+
+<!--        <android.support.v7.widget.RecyclerView-->
+<!--            android:id="@+id/rvSearchResult"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:fadingEdgeLength="20dp"-->
+<!--            android:fillViewport="false"-->
+<!--            android:requiresFadingEdge="vertical" />-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/tvSerachMessage"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_centerInParent="true"-->
+<!--            android:text="@string/seach_content"-->
+<!--            android:textColor="@color/white"-->
+<!--            android:textSize="18sp"-->
+<!--            android:visibility="gone" />-->
+
+<!--        <ProgressBar-->
+<!--            android:id="@+id/progressBar_cyclic"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_centerHorizontal="true"-->
+<!--            android:layout_centerVertical="true"-->
+<!--            android:minWidth="50dp"-->
+<!--            android:minHeight="50dp"-->
+<!--            android:visibility="invisible" />-->
+
+<!--    </RelativeLayout>-->
+
+
+<!--</ScrollView>-->
+
+
+<!--</RelativeLayout>-->

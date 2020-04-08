@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package CDEService;
+
+import   "google/api/annotations.proto";
+
+
+service CDEService {
+    rpc SearchStream(SearchQuery) returns(stream Content) {
+        option (google.api.http) = {
+                post:"/searchStream"
+                body: "*"
+        };
+    }
+
+    rpc Search(SearchQuery) returns(SearchResponse) {
+        option (google.api.http) = {
+                post:"/search"
+                body: "*"
+        };
+    }
+}
+
+message SearchQuery{
+    string query = 1;
+}
+
+message SearchResponse{
+    repeated Content contentTile = 1;
+}
+
+
+// new schema
+message Content {
+    string title = 8;
+    repeated string poster = 1;
+    repeated string portriat = 2;
+    TileType type = 3;
+    bool isDetailPage = 4;
+    string contentId = 5;
+    repeated Play play = 6;
+    repeated string video = 7;
+}
+
+message Play {
+    Monetize monetize = 5;
+    string target = 1;
+    string source = 2;
+    string package = 3;
+    string type = 4;
+}
+
+
+enum Monetize {
+    Free = 0;
+    Paid = 1;
+    Subscription = 2;
+    Rent = 3;
+}
+
+
+enum TileType {
+    ImageTile = 0;
+    VideoTile = 1;
+    FeatureTile = 2;
+    AdvertiseTile = 3;
+    CarouselTile = 4;
+}

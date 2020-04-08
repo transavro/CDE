@@ -5,7 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,19 +28,26 @@ import com.google.android.youtube.player.YouTubeIntents;
 
 import java.util.ArrayList;
 
-import models.ContentTile;
+import CDEService.CDEServiceOuterClass;
 
 public class SearchViewDataAdapter extends RecyclerView.Adapter<SearchViewDataAdapter.ViewHolder> {
 
     private static final String TAG = "SearchViewDataAdapter";
     private Context mContext;
-    ArrayList<ContentTile> rowItems;
-    String carouselBaseUrl = "http://cloudwalker-assets-prod.s3.ap-south-1.amazonaws.com/images/tiles/";
+    private ArrayList<CDEServiceOuterClass.Content> rowItems;
 
-    public SearchViewDataAdapter(Context context, ArrayList<ContentTile> rowItems) {
+    public SearchViewDataAdapter(Context context) {
         this.mContext = context;
-        this.rowItems = rowItems;
+        rowItems = new ArrayList<>();
     }
+
+    public void addData(ArrayList<CDEServiceOuterClass.Content> newData) {
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MyDiffUtilCallBack(newData, rowItems));
+        diffResult.dispatchUpdatesTo(this);
+        rowItems.clear();
+        this.rowItems.addAll(newData);
+    }
+
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -47,16 +57,17 @@ public class SearchViewDataAdapter extends RecyclerView.Adapter<SearchViewDataAd
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        if (rowItems.get(position).getPoster() != null && rowItems.get(position).getPoster().size() > 0) {
-            Log.d(TAG, "onBindViewHolder: " + rowItems.get(position).getPoster().get(0) + "    " + rowItems.get(position).getTitle());
+        if (!rowItems.get(position).getPosterList().isEmpty() && rowItems.get(position).getPoster(0) != null && !rowItems.get(position).getPoster(0).isEmpty()) {
+            Log.d(TAG, "onBindViewHolder: " + rowItems.get(position).getPoster(0) + "    " + rowItems.get(position).getTitle());
+            String carouselBaseUrl = "http://cloudwalker-assets-prod.s3.ap-south-1.amazonaws.com/images/tiles/";
             Glide.with(mContext)
-                    .load(carouselBaseUrl + rowItems.get(position).getPoster().get(0))
+                    .load(carouselBaseUrl + rowItems.get(position).getPoster(0))
                     .placeholder(R.color.shimmer_bg_color)
                     .error(R.color.shimmer_bg_color)
                     .listener(new RequestListener<String, GlideDrawable>() {
                         @Override
                         public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            Glide.with(mContext).load(rowItems.get(position).getPoster().get(0)).into(holder.imgViewSearch);
+                            Glide.with(mContext).load(rowItems.get(position).getPoster(0)).into(holder.imgViewSearch);
                             return false;
                         }
 
@@ -66,7 +77,7 @@ public class SearchViewDataAdapter extends RecyclerView.Adapter<SearchViewDataAd
                         }
                     }).into(holder.imgViewSearch);
 
-//            Picasso.with(mContext).load(carouselBaseUrl + rowItems.get(position).getPoster().get(0))
+//            Picasso.with(mContext).load(carouselBaseUrl + rowItems.get(position).getPoster(0).get(0))
 //                    .placeholder(R.color.shimmer_bg_color)
 //                    .error(R.color.shimmer_bg_color)
 //                    .into(holder.imgViewSearch);
@@ -101,20 +112,28 @@ public class SearchViewDataAdapter extends RecyclerView.Adapter<SearchViewDataAd
     }
 
 
-    private void handleTileClick(ContentTile contentTile, Context context) {
+    private void handleTileClick(CDEServiceOuterClass.Content contentTile, Context context) {
         //check if the package is there or not
-        if(contentTile.getPlay().get(0).getPackage().contains("youtube")){
-            contentTile.getPlay().get(0).setPackage("com.google.android.youtube.tv");
-        }
-        if (!isPackageInstalled(contentTile.getPlay().get(0).getPackage(), context.getPackageManager())) {
-            Toast.makeText(context, "App not installed " + contentTile.getPlay().get(0).getPackage(), Toast.LENGTH_SHORT).show();
+        if (!isPackageInstalled(contentTile.getPlay(0).getPackage(), context.getPackageManager())) {
+            Toast.makeText(context, "App not installed " + contentTile.getPlay(0).getPackage(), Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (contentTile.getPlay().get(0).getTarget().isEmpty()) {
-            Intent intent = context.getPackageManager().getLaunchIntentForPackage(contentTile.getPlay().get(0).getPackage());
+        if (contentTile.getPlay(0).getPackage().contains("youtube")) {
+            if (contentTile.getPlay(0).getTarget().startsWith("PL")) {
+                startYoutube("OPEN_PLAYLIST", context, contentTile.getPlay(0).getTarget());
+            } else if (contentTile.getPlay(0).getTarget().startsWith("UC")) {
+                startYoutube("OPEN_CHANNEL", context, contentTile.getPlay(0).getTarget());
+            } else {
+                startYoutube("PLAY_VIDEO", context, contentTile.getPlay(0).getTarget());
+            }
+            return;
+        }
+
+        if (contentTile.getPlay(0).getTarget().isEmpty()) {
+            Intent intent = context.getPackageManager().getLaunchIntentForPackage(contentTile.getPlay(0).getPackage());
             if (intent == null) {
-                intent = context.getPackageManager().getLeanbackLaunchIntentForPackage(contentTile.getPlay().get(0).getPackage());
+                intent = context.getPackageManager().getLeanbackLaunchIntentForPackage(contentTile.getPlay(0).getPackage());
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
@@ -122,35 +141,26 @@ public class SearchViewDataAdapter extends RecyclerView.Adapter<SearchViewDataAd
         }
 
         //if package is installed
-        //check its an youtube
-        if (contentTile.getPlay().get(0).getPackage().contains("youtube")) {
-                if (contentTile.getPlay().get(0).getTarget().startsWith("PL")) {
-                    startYoutube("OPEN_PLAYLIST", context, contentTile.getPlay().get(0).getTarget());
-                } else if (contentTile.getPlay().get(0).getTarget().startsWith("UC")) {
-                    startYoutube("OPEN_CHANNEL", context, contentTile.getPlay().get(0).getTarget());
-                } else {
-                    startYoutube("PLAY_VIDEO", context, contentTile.getPlay().get(0).getTarget());
-                }
-        } else if (contentTile.getPlay().get(0).getPackage().contains("hotstar")) {
+        if (contentTile.getPlay(0).getPackage().contains("hotstar")) {
             // if hotstar
             try {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(contentTile.getPlay().get(0).getTarget()));
-                intent.setPackage(contentTile.getPlay().get(0).getPackage());
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(contentTile.getPlay(0).getTarget()));
+                intent.setPackage(contentTile.getPlay(0).getPackage());
                 context.startActivity(intent);
             } catch (ActivityNotFoundException e) {
                 e.printStackTrace();
-                Intent intent = context.getPackageManager().getLeanbackLaunchIntentForPackage(contentTile.getPlay().get(0).getPackage());
-                if (contentTile.getPlay().get(0).getTarget().contains("https")) {
-                    intent.setData(Uri.parse(contentTile.getPlay().get(0).getTarget().replace("https://www.hotstar.com", "hotstar://content")));
+                Intent intent = context.getPackageManager().getLeanbackLaunchIntentForPackage(contentTile.getPlay(0).getPackage());
+                if (contentTile.getPlay(0).getTarget().contains("https")) {
+                    intent.setData(Uri.parse(contentTile.getPlay(0).getTarget().replace("https://www.hotstar.com", "hotstar://content")));
                 } else {
-                    intent.setData(Uri.parse(contentTile.getPlay().get(0).getTarget().replace("http://www.hotstar.com", "hotstar://content")));
+                    intent.setData(Uri.parse(contentTile.getPlay(0).getTarget().replace("http://www.hotstar.com", "hotstar://content")));
                 }
                 context.startActivity(intent);
             }
         } else {
             // if other app
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(contentTile.getPlay().get(0).getTarget()));
-            intent.setPackage(contentTile.getPlay().get(0).getPackage());
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(contentTile.getPlay(0).getTarget()));
+            intent.setPackage(contentTile.getPlay(0).getPackage());
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         }
@@ -231,6 +241,59 @@ public class SearchViewDataAdapter extends RecyclerView.Adapter<SearchViewDataAd
 
         }
     }
+
+
+    public class MyDiffUtilCallBack extends DiffUtil.Callback {
+        ArrayList<CDEServiceOuterClass.Content> newList;
+        ArrayList<CDEServiceOuterClass.Content> oldList;
+
+        public MyDiffUtilCallBack(ArrayList<CDEServiceOuterClass.Content> newList, ArrayList<CDEServiceOuterClass.Content> oldList) {
+            this.newList = newList;
+            this.oldList = oldList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList != null ? oldList.size() : 0;
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList != null ? newList.size() : 0;
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            return newList.get(newItemPosition).getTitle().equals(oldList.get(oldItemPosition).getTitle());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            return newList.get(newItemPosition).getTitle().equals(oldList.get(oldItemPosition).getTitle());
+        }
+
+        @Nullable
+        @Override
+        public Object getChangePayload(int oldItemPosition, int newItemPosition) {
+
+            CDEServiceOuterClass.Content newModel = newList.get(newItemPosition);
+            CDEServiceOuterClass.Content oldModel = oldList.get(oldItemPosition);
+
+            Bundle diff = new Bundle();
+
+            if (!newModel.getTitle().equals(oldModel.getTitle())) {
+                diff.putString("title", newModel.getTitle());
+            }
+            if (diff.size() == 0) {
+                return null;
+            }
+            return diff;
+            //return super.getChangePayload(oldItemPosition, newItemPosition);
+        }
+    }
+
+
+
 }
 
 
