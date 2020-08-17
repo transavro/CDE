@@ -2,7 +2,6 @@ package com.cloudwalker.search;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.v17.leanback.widget.BaseCardView;
 import android.support.v17.leanback.widget.ImageCardView;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v4.content.ContextCompat;
@@ -14,7 +13,8 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
-import CDEService.CDEServiceOuterClass;
+import cloudwalker.CDEServiceOuterClass;
+
 
 public class CardPresenter extends Presenter {
     private static final String TAG = "CardPresenter";
@@ -24,7 +24,8 @@ public class CardPresenter extends Presenter {
     private static int sSelectedBackgroundColor;
     private static int sDefaultBackgroundColor;
     private Drawable mDefaultCardImage;
-    String carouselBaseUrl = "http://cloudwalker-assets-prod.s3.ap-south-1.amazonaws.com/images/tiles/";
+//    String carouselBaseUrl = "http://cloudwalker-assets-prod.s3.ap-south-1.amazonaws.com/images/tiles/";
+    String carouselBaseUrl = "http://asset.s4.cloudwalker.tv/images/tiles/";
 
 
     private static void updateCardBackgroundColor(ImageCardView view, boolean selected) {
@@ -47,9 +48,11 @@ public class CardPresenter extends Presenter {
                     }
                 };
 
-        BaseCardView.LayoutParams layoutParams = (BaseCardView.LayoutParams) cardView.findViewById(R.id.info_field).getLayoutParams();
-        layoutParams.height = 10;
-        cardView.findViewById(R.id.info_field).setLayoutParams(layoutParams);
+        //***************for the selected strip at the bottom do this ***********
+//        BaseCardView.LayoutParams layoutParams = (BaseCardView.LayoutParams) cardView.findViewById(R.id.info_field).getLayoutParams();
+//        layoutParams.height = 10;
+//        cardView.findViewById(R.id.info_field).setLayoutParams(layoutParams);
+
         cardView.setFocusable(true);
         cardView.setCardType(ImageCardView.CARD_REGION_VISIBLE_ACTIVATED);
         cardView.setFocusableInTouchMode(true);
@@ -61,10 +64,16 @@ public class CardPresenter extends Presenter {
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, final Object item) {
         final ImageCardView cardView = (ImageCardView) viewHolder.view;
-        CDEServiceOuterClass.Content movie = (CDEServiceOuterClass.Content) item;
-        if (!movie.getPosterList().isEmpty() && !movie.getPoster(0).isEmpty()) {
+        CDEServiceOuterClass.Optimus movie = (CDEServiceOuterClass.Optimus) item;
+        ((ImageCardView)viewHolder.view).setTitleText(movie.getMetadata().getTitle());
+        StringBuilder contentText = new StringBuilder();
+        for(CDEServiceOuterClass.ContentAvailable p : movie.getContentAvailableList()){
+            contentText.append(p.getSource()).append(" | ");
+        }
+        ((ImageCardView)viewHolder.view).setContentText(contentText.toString());
+        if (!movie.getMedia().getLandscapeList().isEmpty() && !movie.getMedia().getLandscape(0).isEmpty()) {
             Glide.with(viewHolder.view.getContext())
-                    .load(carouselBaseUrl + ((CDEServiceOuterClass.Content) item).getPoster(0))
+                    .load(carouselBaseUrl + ((CDEServiceOuterClass.Optimus) item).getMedia().getLandscape(0))
                     .diskCacheStrategy(DiskCacheStrategy.RESULT)
                     .override(CARD_WIDTH, CARD_HEIGHT)
                     .error(R.drawable.movie)
@@ -74,7 +83,7 @@ public class CardPresenter extends Presenter {
                     .listener(new RequestListener<String, GlideDrawable>() {
                         @Override
                         public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            Glide.with(viewHolder.view.getContext()).load(((CDEServiceOuterClass.Content) item).getPoster(0))
+                            Glide.with(viewHolder.view.getContext()).load(((CDEServiceOuterClass.Optimus) item).getMedia().getLandscape(0))
                                     .diskCacheStrategy(DiskCacheStrategy.RESULT)
                                     .override(CARD_WIDTH, CARD_HEIGHT)
                                     .error(R.drawable.movie)

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.cloudwalker.search">
+    package="com.cloudwalker.search"
+    android:sharedUserId="android.uid.system">
 
     <uses-feature
         android:name="android.software.leanback"
@@ -28,6 +29,14 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="cwsearch"
+                    android:scheme="cde" />
+            </intent-filter>
         </activity>
 
 
@@ -39,17 +48,17 @@
 <!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->
 <!--            </intent-filter>-->
 
-<!--            &lt;!&ndash; <intent-filter> &ndash;&gt;-->
-<!--            &lt;!&ndash; <action android:name="android.intent.action.VIEW" /> &ndash;&gt;-->
-<!--            &lt;!&ndash; <category android:name="android.intent.category.DEFAULT" /> &ndash;&gt;-->
-<!--            &lt;!&ndash; <category android:name="android.intent.category.BROWSABLE" /> &ndash;&gt;-->
+<!--             <intent-filter> -->
+<!--             <action android:name="android.intent.action.VIEW" /> -->
+<!--             <category android:name="android.intent.category.DEFAULT" /> -->
+<!--             <category android:name="android.intent.category.BROWSABLE" /> -->
 
 
-<!--            &lt;!&ndash; <data &ndash;&gt;-->
-<!--            &lt;!&ndash; android:host="*" &ndash;&gt;-->
-<!--            &lt;!&ndash; android:pathPattern=".*" &ndash;&gt;-->
-<!--            &lt;!&ndash; android:scheme="cwsearch" /> &ndash;&gt;-->
-<!--            &lt;!&ndash; </intent-filter> &ndash;&gt;-->
+<!--             <data -->
+<!--             android:host="*" -->
+<!--             android:pathPattern=".*" -->
+<!--             android:scheme="cwsearch" /> -->
+<!--             </intent-filter> -->
 
 <!--        </activity>-->
 

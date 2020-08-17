@@ -52,6 +52,8 @@ android {
             disable 'GoogleAppIndexingWarning', 'HardcodedText', 'InvalidPackage'
             textReport true
             textOutput "stdout"
+            checkReleaseBuilds false
+            abortOnError false
         }
     }
 
