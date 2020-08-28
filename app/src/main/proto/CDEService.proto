@@ -1,137 +1,33 @@
 syntax = "proto3";
 
-package cloudwalker;
+package cde;
 
 import "google/api/annotations.proto";
 
 service CDEService {
-    rpc SearchStream(SearchQuery) returns(stream Optimus) {
-        option (google.api.http) = {
-                post:"/searchStream"
-                body: "*"
-        };
-    }
-
     rpc Search(SearchQuery) returns(SearchResponse) {
         option (google.api.http) = {
                 post:"/search"
                 body: "*"
         };
     }
-
-    rpc SearchText(SearchQuery) returns (SearchTextResponse) {
-        option (google.api.http) = {
-        post:"/searchtext"
-        body: "*"
-      };
-    }
-
-    rpc CdeClick(TileId) returns (Resp) {
-        option (google.api.http) = {
-        post:"/cdecounter"
-        body: "*"
-      };
-    }
 }
 
-
-message TileId{
-    string id = 1;
-}
-
-message Resp{
-    bool result = 1;
-}
 
 message SearchQuery{
     string query = 1;
-    map<string, FilterKey> searchMeta = 2;
-}
-
-message FilterKey {
-    repeated string values = 1;
+    repeated string genre = 2;
+    repeated string categories = 3;
+    repeated string languages = 4;
+    repeated string cast = 5;
+    repeated string sources = 6;
+    repeated string seasonNumber = 7;
+    repeated string episodeNumber = 8;
 }
 
 message SearchResponse{
     repeated ContentDelivery contentTiles = 1;
 }
-
-message SearchTextResponse{
-    repeated string result = 1;
-}
-
-
-
-enum Monetize {
-    Free = 0;
-    Paid = 1;
-    Subscription = 2;
-    Rent = 3;
-}
-
-enum TileType {
-    ImageTile = 0;
-    VideoTile = 1;
-    FeatureTile = 2;
-    AdvertiseTile = 3;
-    CarouselTile = 4;
-}
-
-message ContentAvailable {
-    Monetize monetize = 6;
-    string target_id = 1;
-    string source = 2;
-    string package = 3;
-    string type = 4;
-    string target = 5;
-}
-
-message Media {
-    repeated string landscape = 5;
-    repeated string portrait = 1;
-    repeated string backdrop = 2;
-    repeated string banner = 3;
-    repeated string video = 4;
-}
-
-message Content {
-    bool publish_state = 3;
-    bool detail_page = 1;
-    repeated string sources = 2;
-}
-
-message Metadata {
-    string title = 20;
-    string imdb_id = 1;
-    string synopsis = 2;
-    repeated string country = 3;
-    string runtime = 4;
-    double rating = 5;
-    string release_date = 6;
-    repeated string tags = 7;
-    int32 year = 8;
-    repeated string cast = 9;
-    repeated string directors = 10;
-    repeated string genre = 11;
-    repeated string categories = 12;
-    repeated string languages = 13;
-    bool kids_safe = 14;
-    double view_count = 15;
-    int32 season = 16;
-    int32 episode = 17;
-    int32 part = 18;
-    repeated int32 mood = 19;
-}
-
-message Optimus {
-    string ref_id = 1;
-    TileType tile_type = 2;
-    Content content = 3;
-    Metadata metadata = 4;
-    repeated ContentAvailable content_available = 5;
-    Media media = 6;
-}
-
 
 
 message ContentDelivery {
@@ -156,3 +52,67 @@ message PLAY {
     string target = 5;
     string offerrefid = 6;
 }
+
+
+
+message JwPrime {
+    string refid = 31;
+    double tiletype = 1;
+    bool publishstate = 2;
+    bool detailpage = 3;
+    repeated string sources = 4;
+    string imdbid = 5;
+    string synopsis = 6;
+    repeated string country = 7;
+    string runtime = 8;
+    double rating = 9;
+    string releasedate = 10;
+    repeated string tags = 11;
+    double year = 12;
+    repeated string cast = 13;
+    repeated string directors = 14;
+    repeated string genre = 15;
+    repeated string categories = 16;
+    repeated string languages = 17;
+    bool kidssafe = 18;
+    double part = 19;
+    repeated float mood = 20;
+    string title = 21;
+
+    message SEASONS {
+        string seasonnumber = 4;
+        string episodenumber = 1;
+        string episodetitle = 2;
+        message OFFER {
+            double monetize = 7;
+            string targetid = 1;
+            string source = 2;
+            string package = 3;
+            string type = 4;
+            string target = 5;
+        }
+        OFFER offer = 3;
+    }
+
+    repeated SEASONS seasons = 22;
+
+    message OFFER {
+        double monetize = 7;
+        string targetid = 1;
+        string source = 2;
+        string package = 3;
+        string type = 4;
+        string target = 5;
+    }
+
+    repeated OFFER offer = 23;
+    double viewcount = 24;
+    string providerid = 25;
+    repeated string landscape = 26;
+    repeated string portrait = 27;
+    repeated string backdrop = 28;
+    repeated string banner = 29;
+    repeated string video = 30;
+}
+
+

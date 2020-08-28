@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.Arrays;
 
 
 //***********passed
@@ -27,6 +28,8 @@ public class PlayOnTv {
     String packageName, deeplink;
     Context context;
     private static final String TAG = "PlayOnTv";
+    private String[] cwPartner = {"com.zee5.aosp", "in.startv.hotstar", "com.sonyliv"};
+
 
     public PlayOnTv(Context context , String packageName, String targetUrl){
         this.context = context;
@@ -43,6 +46,8 @@ public class PlayOnTv {
         //check if the app is installed or not
         if(!isPackageInstalled(packageName, context.getPackageManager())){
 //            Toast.makeText(context.getApplicationContext(), packageName+ " is not installed.", Toast.LENGTH_SHORT).show();
+            //TODO Go To AppStore
+            goToAppStore(packageName);
             return -1;
         }
 
@@ -86,6 +91,10 @@ public class PlayOnTv {
             packageName = "com.jio.media.stb.ondemand";
         }else if(packageName.equals("com.tru")){
             packageName = "com.yupptv.cloudwalker";
+        }else if(packageName.equals("com.sonyliv")){
+            deeplink = deeplink.replace( "https://www.sonyliv.com/details/full movie", "sony://player");
+            String[] tmp = deeplink.split("/");
+            deeplink = deeplink.replace(tmp[tmp.length - 1], "");
         }
 
         //playing...
@@ -106,6 +115,32 @@ public class PlayOnTv {
         }catch (Exception e){
             e.printStackTrace();
             return 0;
+        }
+    }
+
+
+    private void goToAppStore(String packageName){
+        Intent intent = new Intent();
+        if (Arrays.asList(cwPartner).contains(packageName)){
+            //go to cloudwalker appstore
+            String uri = "cwmarket://appstore?package=" + packageName;
+            intent.setData(Uri.parse(uri));
+            intent.setPackage("tv.cloudwalker.market");
+            intent.setClassName( "tv.cloudwalker.market" , "tv.cloudwalker.market.activity.AppDetailsActivity" );
+
+
+        }else{
+            //go to cvte Appstore
+            String uri = "appstore://appDetail?package=" + packageName;
+            intent.setData(Uri.parse(uri));
+            intent.setPackage("com.stark.store");
+            intent.setClassName( "com.stark.store" , "com.stark.store.ui.detail.AppDetailActivity" );
+        }
+        try{
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        }catch (Exception e){
+            Log.e(TAG, "goToAppStore:Error while triggering AppStore ", e);
         }
     }
 

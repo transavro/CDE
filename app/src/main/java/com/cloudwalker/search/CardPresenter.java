@@ -16,7 +16,7 @@ import com.bumptech.glide.request.target.ImageViewTarget;
 import java.util.ArrayList;
 import java.util.List;
 
-import cloudwalker.CDEServiceOuterClass;
+import cde.CDEServiceOuterClass;
 import utils.AppUtils;
 
 
@@ -41,7 +41,7 @@ public class CardPresenter extends Presenter {
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent) {
         sDefaultBackgroundColor = ContextCompat.getColor(parent.getContext(), R.color.transparent);
-        sSelectedBackgroundColor = ContextCompat.getColor(parent.getContext(), R.color.youtube_red);
+        sSelectedBackgroundColor = ContextCompat.getColor(parent.getContext(), R.color.dark_grey);
 
         ImageCardView cardView = new ImageCardView(parent.getContext()) {
                     @Override
@@ -53,7 +53,7 @@ public class CardPresenter extends Presenter {
 
 
         cardView.setFocusable(true);
-        cardView.setCardType(ImageCardView.CARD_REGION_VISIBLE_ACTIVATED);
+        cardView.setCardType(ImageCardView.CARD_TYPE_INFO_UNDER);
         cardView.setFocusableInTouchMode(true);
         cardView.setClipToPadding(true);
         cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT);

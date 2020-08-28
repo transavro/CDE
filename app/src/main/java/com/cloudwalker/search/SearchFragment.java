@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import cloudwalker.CDEServiceOuterClass;
+import cde.CDEServiceOuterClass;
 import utils.PlayOnTv;
 
 
@@ -107,10 +107,8 @@ public class SearchFragment extends VerticalGridSupportFragment
 
 
     public void handleTileClick(CDEServiceOuterClass.ContentDelivery contentTile, Context context , String preferredSource) {
-//        ((SearchActivity)getActivity()).logClickEvent(contentTile.getContentId());
         if(contentTile.getPlayList().size() == 0) return;
         if(contentTile.getPlayList().get(0).getPackage().isEmpty()) return;
-//        showPlayPopup(context, contentTile);
 
         if(!preferredSource.isEmpty()){
             for (CDEServiceOuterClass.PLAY p: contentTile.getPlayList()) {
@@ -118,9 +116,9 @@ public class SearchFragment extends VerticalGridSupportFragment
                     PlayOnTv playOnTv = new PlayOnTv(context, p.getPackage(), p.getTarget());
                     int r = playOnTv.trigger();
                     if(r == -1){
-                        Toast.makeText(context, p.getPackage()+" is not installed.", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(context, p.getPackage()+" is not installed.", Toast.LENGTH_SHORT).show();
                     }else if( r == 0){
-                        Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show();
                     }
                     return;
                 }

@@ -3,7 +3,6 @@ package com.cloudwalker.search;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,13 +20,11 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
-import cloudwalker.CDEServiceGrpc;
-import cloudwalker.CDEServiceOuterClass;
+import cde.CDEServiceGrpc;
+import cde.CDEServiceOuterClass;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -52,7 +49,7 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
     private boolean isSearchNPlay = false;
     private boolean isFromDeepLink = false;
     private String sourceToPlay = "";
-    private String[] cwCanTrigger = {"youtube", "netflix", "amazon prime", "zee5", "hotstar"};
+    private String[] cwCanTrigger = {"youtube", "netflix", "amazon prime video", "zee5", "hotstar", "sony liv"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,120 +74,94 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
 
         Log.d(TAG, "resolveVskDeepLink: ################################# GOT DEEEP LINK");
         String cmd = intent.getStringExtra("commandType");
-        if(cmd != null && !cmd.isEmpty()){
-            Log.d(TAG, "resolveVskDeepLink: cmd "+cmd);
+        if (cmd != null && !cmd.isEmpty()) {
+            Log.d(TAG, "resolveVskDeepLink: cmd " + cmd);
         }
 
         String sf = intent.getStringExtra("searchFilter");
         sourceToPlay = "";
 
-        if(sf == null) return;
-        if(sf.isEmpty()) return;
+        if (sf == null) return;
+        if (sf.isEmpty()) return;
 
         SearchFilter searchFilter = new Gson().fromJson(sf, SearchFilter.class);
-        Log.d(TAG, "resolveVskDeepLink: searchFilter "+sf);
+        Log.d(TAG, "resolveVskDeepLink: searchFilter " + sf);
 
         if (searchFilter != null) {
+
+            CDEServiceOuterClass.SearchQuery.Builder queryBuilder = CDEServiceOuterClass.SearchQuery.newBuilder();
             Log.d(TAG, "resolveVskDeepLink: got vsk serach ");
-            Map<String , CDEServiceOuterClass.FilterKey> searchMeta = new HashMap<>();
-            if(searchFilter.getGenres() != null && !searchFilter.getGenres().isEmpty() ){
+
+            if (searchFilter.getGenres() != null && !searchFilter.getGenres().isEmpty()) {
                 //genre added
-                Log.d(TAG, "resolveVskDeepLink: genre  "+searchFilter.getGenres());
-                searchMeta.put(
-                        "metadata.genre", CDEServiceOuterClass.FilterKey
-                                .newBuilder()
-                                .addAllValues(searchFilter.getGenres())
-                                .build()
-                );
+                Log.d(TAG, "resolveVskDeepLink: genre  " + searchFilter.getGenres());
+                queryBuilder.addAllGenre(searchFilter.getGenres());
             }
 
-            if(searchFilter.getAppName() != null && !searchFilter.getAppName().isEmpty() ){
+            if (searchFilter.getAppName() != null && !searchFilter.getAppName().isEmpty()) {
                 //source added
-                Log.d(TAG, "resolveVskDeepLink: appName  "+searchFilter.getAppName());
+                Log.d(TAG, "resolveVskDeepLink: appName  " + searchFilter.getAppName());
                 sourceToPlay = searchFilter.getAppName();
-                searchMeta.put(
-                        "content.sources", CDEServiceOuterClass.FilterKey
-                                .newBuilder()
-                                .addValues(searchFilter.getAppName())
-                                .build()
-                );
+                List<String> sources = new ArrayList<>();
+                sources.add(searchFilter.getAppName());
+                queryBuilder.addAllSources(sources);
             }
 
 
-            if(searchFilter.getMediaType() != null && !searchFilter.getMediaType().isEmpty() ){
+            if (searchFilter.getMediaType() != null && !searchFilter.getMediaType().isEmpty()) {
                 //categories added
-                Log.d(TAG, "resolveVskDeepLink: mediatype  "+searchFilter.getMediaType());
-
-                searchMeta.put(
-                        "metadata.categories", CDEServiceOuterClass.FilterKey
-                                .newBuilder()
-                                .addValues(searchFilter.getMediaType())
-                                .build()
-                );
+                Log.d(TAG, "resolveVskDeepLink: mediatype  " + searchFilter.getMediaType());
+                List<String> categories = new ArrayList<>();
+                categories.add(searchFilter.getMediaType());
+                queryBuilder.addAllCategories(categories);
             }
 
-            if(searchFilter.getSeason() != null && !searchFilter.getSeason().isEmpty() ){
+            if (searchFilter.getSeason() != null && !searchFilter.getSeason().isEmpty()) {
 
-                Log.d(TAG, "resolveVskDeepLink: season  "+searchFilter.getSeason());
-
+                Log.d(TAG, "resolveVskDeepLink: season  " + searchFilter.getSeason());
                 //season added
-                searchMeta.put(
-                        "seasonnumber", CDEServiceOuterClass.FilterKey
-                                .newBuilder()
-                                .addValues(searchFilter.getSeason())
-                                .build()
-                );
+                List<String> seasons = new ArrayList<>();
+                seasons.add(searchFilter.getSeason());
+                queryBuilder.addAllSeasonNumber(seasons);
+
             }
 
-            if(searchFilter.getEpisode() != null && !searchFilter.getEpisode().isEmpty() ){
-                Log.d(TAG, "resolveVskDeepLink: episode  "+searchFilter.getEpisode());
-
+            if (searchFilter.getEpisode() != null && !searchFilter.getEpisode().isEmpty()) {
+                Log.d(TAG, "resolveVskDeepLink: episode  " + searchFilter.getEpisode());
                 //episode added
-                searchMeta.put(
-                        "episodenumber", CDEServiceOuterClass.FilterKey
-                                .newBuilder()
-                                .addValues(searchFilter.getEpisode())
-                                .build()
-                );
+                List<String> episodes = new ArrayList<>();
+                episodes.add(searchFilter.getEpisode());
+                queryBuilder.addAllEpisodeNumber(episodes);
             }
 
 
-            if(searchFilter.getActors() != null && !searchFilter.getActors().isEmpty() ){
+            if (searchFilter.getActors() != null && !searchFilter.getActors().isEmpty()) {
                 //cast added
-                Log.d(TAG, "resolveVskDeepLink: actors  "+searchFilter.getActors());
-
-                searchMeta.put(
-                        "metadata.cast", CDEServiceOuterClass.FilterKey
-                                .newBuilder()
-                                .addAllValues(searchFilter.getActors())
-                                .build()
-                );
+                Log.d(TAG, "resolveVskDeepLink: actors  " + searchFilter.getActors());
+                queryBuilder.addAllCast(searchFilter.getActors());
             }
 
-            String query  = "";
-            if(searchFilter.getTitles() != null && !searchFilter.getTitles().isEmpty()){
-                Log.d(TAG, "resolveVskDeepLink: title  "+searchFilter.getTitles());
+            String query = "";
+            if (searchFilter.getTitles() != null && !searchFilter.getTitles().isEmpty()) {
+                Log.d(TAG, "resolveVskDeepLink: title  " + searchFilter.getTitles());
                 query = searchFilter.getTitles().get(0);
-            }else if(searchFilter.getCollections() != null && !searchFilter.getCollections().isEmpty()){
+            } else if (searchFilter.getCollections() != null && !searchFilter.getCollections().isEmpty()) {
                 query = String.valueOf(searchFilter.getCollections().get(0));
             }
 
-            CDEServiceOuterClass.SearchQuery searchQuery = CDEServiceOuterClass.SearchQuery.newBuilder()
-                    .setQuery(query)
-                    .putAllSearchMeta(searchMeta)
-                    .build();
+            queryBuilder.setQuery(query);
 
             Log.d(TAG, "resolveDeepLink: got uri data ");
 
             if (query != null) {
                 Log.d(TAG, "resolveDeepLink: got query = " + query);
                 searchText = query;
-                serverCall(searchQuery);
-                if(edtSearchView != null)
+                serverCall(queryBuilder.build());
+                if (edtSearchView != null)
                     edtSearchView.setText(searchText);
 
                 Log.d(TAG, "resolveDeepLink: got mode = " + cmd);
-                if(Objects.equals(cmd, "searchAndPlay")){
+                if (Objects.equals(cmd, "searchAndPlay")) {
                     isSearchNPlay = true;
                 }
                 isFromDeepLink = true;
@@ -198,10 +169,7 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
         }
     }
 
-
-
-
-    public String getSearchText(){
+    public String getSearchText() {
         return searchText;
     }
 
@@ -263,7 +231,6 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
     }
 
 
-
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -315,8 +282,8 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
 
             @Override
             public void onNext(CDEServiceOuterClass.SearchResponse value) {
-                for(CDEServiceOuterClass.ContentDelivery delivery : value.getContentTilesList()){
-                    if(delivery.getPlayList() != null && !delivery.getPlayList().isEmpty()){
+                for (CDEServiceOuterClass.ContentDelivery delivery : value.getContentTilesList()) {
+                    if (delivery.getPlayList() != null && !delivery.getPlayList().isEmpty()) {
                         contents.add(delivery);
                     }
                 }
@@ -324,7 +291,7 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
 
             @Override
             public void onError(final Throwable t) {
-                Log.e(TAG, "onError: "+t);
+                Log.e(TAG, "onError: " + t);
                 SearchActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -335,13 +302,15 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
 
             @Override
             public void onCompleted() {
-                Log.d(TAG, "onNext: BEFORE ====>>> "+contents.size());
+                Log.d(TAG, "onNext: BEFORE ====>>> " + contents.size());
+                long start = System.currentTimeMillis();
                 final List<CDEServiceOuterClass.ContentDelivery> tmp = filterResults(contents);
-                Log.d(TAG, "onNext:AFTER ====>>> "+tmp.size());
+                long end = System.currentTimeMillis();
+                Log.d(TAG, "onCompleted: FILTER TIME ---> " + (end - start) + "  ms");
+                Log.d(TAG, "onNext:AFTER ====>>> " + tmp.size());
                 loadingProgressBar.setVisibility(View.INVISIBLE);
                 searchFragment.refreshData(tmp);
-
-                if(isSearchNPlay && tmp.size() > 0){
+                if (isSearchNPlay && tmp.size() > 0) {
                     searchFragment.handleTileClick(tmp.get(0), SearchActivity.this, sourceToPlay);
                 }
             }
@@ -349,30 +318,10 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
     }
 
 
-    protected void logClickEvent(String tileId){
-        Log.d(TAG, "logClickEvent: CONTENTID "+tileId);
-        cdeServiceStub.cdeClick(CDEServiceOuterClass.TileId.newBuilder().setId(tileId).build(), new StreamObserver<CDEServiceOuterClass.Resp>() {
-            @Override
-            public void onNext(CDEServiceOuterClass.Resp value) { Log.d(TAG, "onNext: tile clicked "+value.getResult()); }
-
-            @Override
-            public void onError(Throwable t) {
-                Log.e(TAG, "onError: tile clicked",t.getCause());
-            }
-
-            @Override
-            public void onCompleted() {
-                Log.d(TAG, "onCompleted: tile clicked");
-            }
-        });
-    }
-
-
-
     @Override
     protected void onResume() {
         ConnectivityState connectivityState = managedChannel.getState(true);
-        Log.d(TAG, "onResume: "+connectivityState.name());
+        Log.d(TAG, "onResume: " + connectivityState.name());
         Intent analyticsIntent = new Intent("tv.cloudwalker.cde.action.OPEN");
         Bundle bundle = new Bundle();
         bundle.putString("packageName", BuildConfig.APPLICATION_ID);
@@ -386,10 +335,10 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
     protected void onPause() {
         Log.d(TAG, "onPause: ");
         ConnectivityState connectivityState = managedChannel.getState(true);
-        Log.d(TAG, "onPause: "+connectivityState.name());
+        Log.d(TAG, "onPause: " + connectivityState.name());
         managedChannel.enterIdle();
-        Log.d(TAG, "onPause: enter idel "+connectivityState.name());
-        if (isFromDeepLink){
+        Log.d(TAG, "onPause: enter idel " + connectivityState.name());
+        if (isFromDeepLink) {
             onBackPressed();
         }
         super.onPause();
@@ -402,18 +351,18 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
         super.onDestroy();
     }
 
-    private List<CDEServiceOuterClass.ContentDelivery> filterResults(List<CDEServiceOuterClass.ContentDelivery> contentDeliverys){
+    private List<CDEServiceOuterClass.ContentDelivery> filterResults(List<CDEServiceOuterClass.ContentDelivery> contentDeliverys) {
         List<CDEServiceOuterClass.ContentDelivery> result = new ArrayList<>();
-        for (CDEServiceOuterClass.ContentDelivery cd: contentDeliverys) {
+        for (CDEServiceOuterClass.ContentDelivery cd : contentDeliverys) {
 
             CDEServiceOuterClass.ContentDelivery.Builder tmp = CDEServiceOuterClass.ContentDelivery.newBuilder();
 
             //making source list non repeated
             List<CDEServiceOuterClass.PLAY> tmpPlaylist = new ArrayList<>();
-            for (CDEServiceOuterClass.PLAY p: cd.getPlayList()) {
-                if(tmpPlaylist.size() == 0) {
+            for (CDEServiceOuterClass.PLAY p : cd.getPlayList()) {
+                if (tmpPlaylist.size() == 0) {
                     tmpPlaylist.add(p);
-                }else{
+                } else {
                     boolean isFound = false;
                     for (CDEServiceOuterClass.PLAY pin : tmpPlaylist) {
                         if (Objects.equals(pin.getSource(), p.getSource())) {
@@ -427,8 +376,8 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
             }
 
             //adding PLAY
-            for (CDEServiceOuterClass.PLAY play: tmpPlaylist) {
-                if(Arrays.asList(cwCanTrigger).contains(play.getSource().toLowerCase()))
+            for (CDEServiceOuterClass.PLAY play : tmpPlaylist) {
+                if (Arrays.asList(cwCanTrigger).contains(play.getSource().toLowerCase()))
                     tmp.addPlay(play);
 
             }
@@ -438,18 +387,37 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
             tmp.setSeason(cd.getSeason());
             tmp.setTitle(cd.getTitle());
             tmp.setType(cd.getType());
-            
+
             //adding media
             tmp.addAllPoster(cd.getPosterList());
             tmp.addAllPortriat(cd.getPortriatList());
             tmp.addAllVideo(cd.getVideoList());
 
             //final adding to list
-            if(tmp.getPlayCount() > 0 ){
+            if (tmp.getPlayCount() > 0) {
                 result.add(tmp.build());
             }
         }
         return result;
     }
 }
+
+
+//    protected void logClickEvent(String tileId){
+//        Log.d(TAG, "logClickEvent: CONTENTID "+tileId);
+//        cdeServiceStub.cdeClick(CDEServiceOuterClass.TileId.newBuilder().setId(tileId).build(), new StreamObserver<CDEServiceOuterClass.Resp>() {
+//            @Override
+//            public void onNext(CDEServiceOuterClass.Resp value) { Log.d(TAG, "onNext: tile clicked "+value.getResult()); }
+//
+//            @Override
+//            public void onError(Throwable t) {
+//                Log.e(TAG, "onError: tile clicked",t.getCause());
+//            }
+//
+//            @Override
+//            public void onCompleted() {
+//                Log.d(TAG, "onCompleted: tile clicked");
+//            }
+//        });
+//    }
 
