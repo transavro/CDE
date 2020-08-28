@@ -13,7 +13,7 @@
     <color name="search_opaque">#0096FF</color>
     <color name="default_background">#ffaa3f</color>
 
-    <color name="transparent">#00000000</color>
+    <color name="transparent">#6A000000</color>
     <color name="app_info_bg">#1f1f1f</color>
     <color name="tile_info_bg">#d6000000</color>
     <color name="icon_background">#4A4F51</color>

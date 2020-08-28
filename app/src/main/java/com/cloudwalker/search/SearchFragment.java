@@ -1,8 +1,8 @@
 package com.cloudwalker.search;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.VerticalGridSupportFragment;
@@ -14,12 +14,17 @@ import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.VerticalGridPresenter;
+import android.util.Log;
+import android.widget.Toast;
 
-import com.google.android.youtube.player.YouTubeIntents;
+import com.crowdfire.cfalertdialog.CFAlertDialog;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import cloudwalker.CDEServiceOuterClass;
+import utils.PlayOnTv;
 
 
 public class SearchFragment extends VerticalGridSupportFragment
@@ -28,24 +33,25 @@ public class SearchFragment extends VerticalGridSupportFragment
     private ArrayObjectAdapter rowAdapter;
     private static final String TAG = "SearchFragment";
 
-    private static DiffCallback<CDEServiceOuterClass.Optimus> DIFF_UTILS = new DiffCallback<CDEServiceOuterClass.Optimus>() {
+    private static DiffCallback<CDEServiceOuterClass.ContentDelivery> DIFF_UTILS = new DiffCallback<CDEServiceOuterClass.ContentDelivery>() {
         @Override
-        public boolean areItemsTheSame(@NonNull CDEServiceOuterClass.Optimus oldItem, @NonNull CDEServiceOuterClass.Optimus newItem) {
-            return oldItem.getMetadata().getTitle().equals(newItem.getMetadata().getTitle());
+        public boolean areItemsTheSame(@NonNull CDEServiceOuterClass.ContentDelivery oldItem, @NonNull CDEServiceOuterClass.ContentDelivery newItem) {
+            return oldItem.getTitle().equals(newItem.getTitle());
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull CDEServiceOuterClass.Optimus oldItem, @NonNull CDEServiceOuterClass.Optimus newItem) {
-            return oldItem.getMetadata().getTitle().equals(newItem.getMetadata().getTitle());
+        public boolean areContentsTheSame(@NonNull CDEServiceOuterClass.ContentDelivery oldItem, @NonNull CDEServiceOuterClass.ContentDelivery newItem) {
+            return oldItem.getTitle().equals(newItem.getTitle());
         }
     };
 
-    public void refreshData(List<CDEServiceOuterClass.Optimus> data){
+    public void refreshData(List<CDEServiceOuterClass.ContentDelivery> data){
         prepareEntranceTransition();
-        rowAdapter.setItems(data, DIFF_UTILS);
+        Log.d(TAG, "refreshData: "+rowAdapter);
+        if(rowAdapter != null)
+            rowAdapter.setItems(data, DIFF_UTILS);
         startEntranceTransition();
     }
-
 
     public void clearData(){
        rowAdapter.clear();
@@ -71,27 +77,27 @@ public class SearchFragment extends VerticalGridSupportFragment
         setOnItemViewClickedListener(new OnItemViewClickedListener() {
             @Override
             public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-                if(item instanceof CDEServiceOuterClass.Optimus){
-                    logAnalyticsEvent((CDEServiceOuterClass.Optimus) item);
-//                    handleTileClick((CDEServiceOuterClass.Optimus) item, itemViewHolder.view.getContext());
+                if(item instanceof CDEServiceOuterClass.ContentDelivery){
+                    logAnalyticsEvent((CDEServiceOuterClass.ContentDelivery) item);
+                    handleTileClick((CDEServiceOuterClass.ContentDelivery) item, itemViewHolder.view.getContext(), "");
                 }
             }
         });
     }
 
-    private void logAnalyticsEvent(CDEServiceOuterClass.Optimus item) {
+    private void logAnalyticsEvent(CDEServiceOuterClass.ContentDelivery item) {
 
         for(int tileIndex = 0 ; tileIndex < getAdapter().size() ; tileIndex++ ){
-            CDEServiceOuterClass.Optimus content = (CDEServiceOuterClass.Optimus) getAdapter().get(tileIndex);
-            if(content.getMetadata().getTitle().equals(item.getMetadata().getTitle())) {
+            CDEServiceOuterClass.ContentDelivery content = (CDEServiceOuterClass.ContentDelivery) getAdapter().get(tileIndex);
+            if(content.getTitle().equals(item.getTitle())) {
                 //FireBase Analytics Stuff
                 Intent analyticsIntent = new Intent("tv.cloudwalker.cde.action.CLICKED");
                 Bundle fireBundle = new Bundle();
-                fireBundle.putString("TILE_ID", item.getRefId());
+                fireBundle.putString("TILE_ID", item.getContentId());
                 fireBundle.putLong("TILE_INDEX", tileIndex);
-                fireBundle.putString("TILE_TITLE", item.getMetadata().getTitle());
+                fireBundle.putString("TILE_TITLE", item.getTitle());
 //                fireBundle.putString("TILE_SOURCE", item..getSource());
-                fireBundle.putString("SEARCH_QUERY", ((SearchActivity)getActivity()).getSearchText());
+                fireBundle.putString("SEARCH_QUERY", ((SearchActivity) Objects.requireNonNull(getActivity())).getSearchText());
                 analyticsIntent.putExtra("info", fireBundle);
                 getActivity().sendBroadcast(analyticsIntent);
                 break;
@@ -100,125 +106,67 @@ public class SearchFragment extends VerticalGridSupportFragment
     }
 
 
-//    public void handleTileClick(CDEServiceOuterClass.Optimus contentTile, Context context) {
-//
-//        if(contentTile.getPlayList().size() == 0) return;
-//        if(contentTile.getPlayList().get(0).getPackage().isEmpty()) return;
-//
-//
-//        for(CDEServiceOuterClass.Play p : contentTile.getPlayList()){
-//            Log.d(TAG, "handleTileClick: package ==> "+p.getPackage());
-//            Log.d(TAG, "handleTileClick: source ==> "+p.getSource());
-//            Log.d(TAG, "handleTileClick: target ==> "+p.getTarget());
-//            Log.d(TAG, "handleTileClick: Monetize ==> "+p.getMonetize());
-//        }
-//
-//        String packageName = contentTile.getPlayList().get(0).getPackage();
-//
-//        if(packageName.contains("youtube")) packageName = "com.google.android.youtube.tv";
-//
-//        if(!isPackageInstalled(packageName, context.getPackageManager())){
-//            Intent appStoreIntent = context.getPackageManager().getLeanbackLaunchIntentForPackage("com.replete.cwappstore");
-//            if (appStoreIntent == null) return;
-//            appStoreIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            startActivity(appStoreIntent);
-//            return;
-//        }
-//
-//
-//        if (contentTile.getPlay(0).getPackage().contains("youtube")) {
-//            if (contentTile.getPlay(0).getTarget().startsWith("PL")) {
-//                startYoutube("OPEN_PLAYLIST", context, contentTile.getPlay(0).getTarget());
-//            } else if (contentTile.getPlay(0).getTarget().startsWith("UC")) {
-//                startYoutube("OPEN_CHANNEL", context, contentTile.getPlay(0).getTarget());
-//            } else {
-//                startYoutube("PLAY_VIDEO", context, contentTile.getPlay(0).getTarget());
-//            }
-//            return;
-//        }
-//
-//        //check if the package is there or not
-//        if (!isPackageInstalled(contentTile.getPlay(0).getPackage(), context.getPackageManager())) {
-//            Toast.makeText(context, "App not installed " + contentTile.getPlay(0).getPackage(), Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        if (contentTile.getPlay(0).getTarget().isEmpty()) {
-//            Intent intent = context.getPackageManager().getLaunchIntentForPackage(contentTile.getPlay(0).getPackage());
-//            if (intent == null) {
-//                intent = context.getPackageManager().getLeanbackLaunchIntentForPackage(contentTile.getPlay(0).getPackage());
-//            }
-//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            context.startActivity(intent);
-//            return;
-//        }
-//
-//        //if package is installed
-//        if (contentTile.getPlay(0).getPackage().contains("hotstar")) {
-//            // if hotstar
-//            try {
-//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(contentTile.getPlay(0).getTarget()));
-//                intent.setPackage(contentTile.getPlay(0).getPackage());
-//                context.startActivity(intent);
-//            } catch (ActivityNotFoundException e) {
-//                e.printStackTrace();
-//                Intent intent = context.getPackageManager().getLeanbackLaunchIntentForPackage(contentTile.getPlay(0).getPackage());
-//                if (contentTile.getPlay(0).getTarget().contains("https")) {
-//                    intent.setData(Uri.parse(contentTile.getPlay(0).getTarget().replace("https://www.hotstar.com", "hotstar://content")));
-//                } else {
-//                    intent.setData(Uri.parse(contentTile.getPlay(0).getTarget().replace("http://www.hotstar.com", "hotstar://content")));
-//                }
-//                context.startActivity(intent);
-//            }
-//        } else {
-//            // if other app
-//            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(contentTile.getPlay(0).getTarget()));
-//            intent.setPackage(contentTile.getPlay(0).getPackage());
-//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            context.startActivity(intent);
-//        }
-//    }
+    public void handleTileClick(CDEServiceOuterClass.ContentDelivery contentTile, Context context , String preferredSource) {
+//        ((SearchActivity)getActivity()).logClickEvent(contentTile.getContentId());
+        if(contentTile.getPlayList().size() == 0) return;
+        if(contentTile.getPlayList().get(0).getPackage().isEmpty()) return;
+//        showPlayPopup(context, contentTile);
 
-    private boolean startYoutube(String type, Context mActivity, String target) {
-        if (type.compareToIgnoreCase("PLAY_VIDEO") == 0 || type.compareToIgnoreCase("CWYT_VIDEO") == 0) {
-            Intent intent = YouTubeIntents.createPlayVideoIntentWithOptions(mActivity, target, true, true);
-            intent.setPackage("com.google.android.youtube.tv");
-            mActivity.startActivity(intent);
-        } else if (type.compareToIgnoreCase("OPEN_PLAYLIST") == 0) {
-            Intent intent = YouTubeIntents.createOpenPlaylistIntent(mActivity, target);
-            intent.setPackage("com.google.android.youtube.tv");
-            intent.putExtra("finish_on_ended", true);
-            mActivity.startActivity(intent);
-        } else if (type.compareToIgnoreCase("PLAY_PLAYLIST") == 0 || type.compareToIgnoreCase("CWYT_PLAYLIST") == 0) {
-            Intent intent = YouTubeIntents.createPlayPlaylistIntent(mActivity, target);
-            intent.setPackage("com.google.android.youtube.tv");
-            intent.putExtra("finish_on_ended", true);
-            mActivity.startActivity(intent);
-        } else if (type.compareToIgnoreCase("OPEN_CHANNEL") == 0) {
-            Intent intent = YouTubeIntents.createChannelIntent(mActivity, target);
-            intent.setPackage("com.google.android.youtube.tv");
-            intent.putExtra("finish_on_ended", true);
-            mActivity.startActivity(intent);
-        } else if (type.compareToIgnoreCase("OPEN_USER") == 0) {
-            Intent intent = YouTubeIntents.createUserIntent(mActivity, target);
-            mActivity.startActivity(intent);
-        } else if (type.compareToIgnoreCase("OPEN_SEARCH") == 0) {
-            Intent intent = YouTubeIntents.createSearchIntent(mActivity, target);
-            mActivity.startActivity(intent);
-        } else {
-            return false;
+        if(!preferredSource.isEmpty()){
+            for (CDEServiceOuterClass.PLAY p: contentTile.getPlayList()) {
+                if(p.getSource().toLowerCase().equals(preferredSource.toLowerCase())){
+                    PlayOnTv playOnTv = new PlayOnTv(context, p.getPackage(), p.getTarget());
+                    int r = playOnTv.trigger();
+                    if(r == -1){
+                        Toast.makeText(context, p.getPackage()+" is not installed.", Toast.LENGTH_SHORT).show();
+                    }else if( r == 0){
+                        Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
+            }
         }
-        return true;
+
+        PlayOnTv playOnTv = new PlayOnTv(context,
+                contentTile.getPlay(0).getPackage(),
+                contentTile.getPlay(0).getTarget());
+        playOnTv.trigger();
     }
 
 
-    private boolean isPackageInstalled(String packagename, PackageManager packageManager) {
-        try {
-            packageManager.getPackageInfo(packagename, 0);
-            return true;
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
+    private void showPlayPopup(final Context context, CDEServiceOuterClass.ContentDelivery contentTile){
+        CFAlertDialog.Builder builder = new CFAlertDialog.Builder(context)
+                .setDialogStyle(CFAlertDialog.CFAlertStyle.ALERT)
+                .setTitle("Play on CloudTV");
+
+        ArrayList<String> sources = new ArrayList<>();
+        final ArrayList<CDEServiceOuterClass.PLAY> temp = new ArrayList<>();
+        for (CDEServiceOuterClass.PLAY play: contentTile.getPlayList()) {
+            if(!play.getSource().isEmpty() && !sources.contains(play.getSource())){
+                sources.add(play.getSource());
+                temp.add(play);
+            }
         }
+
+        builder.setItems(GetStringArray(sources), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int index) {
+                Toast.makeText(context, "Selected:" + index, Toast.LENGTH_SHORT).show();
+                PlayOnTv playOnTv = new PlayOnTv(context,
+                        temp.get(index).getPackage(),
+                        temp.get(index).getTarget());
+                playOnTv.trigger();
+                dialogInterface.dismiss();
+            }
+        });
+        builder.show();
+    }
+
+    private String[] GetStringArray(ArrayList<String> arr){
+        String[] str = new String[arr.size()];
+        for (int j = 0; j < arr.size(); j++)
+            str[j] = arr.get(j);
+        return str;
     }
 
     @Override

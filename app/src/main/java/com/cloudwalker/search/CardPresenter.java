@@ -5,27 +5,31 @@ import android.graphics.drawable.Drawable;
 import android.support.v17.leanback.widget.ImageCardView;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.request.target.ImageViewTarget;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import cloudwalker.CDEServiceOuterClass;
+import utils.AppUtils;
 
 
 public class CardPresenter extends Presenter {
-    private static final String TAG = "CardPresenter";
 
     private static final int CARD_WIDTH = 305;
     private static final int CARD_HEIGHT = 180;
     private static int sSelectedBackgroundColor;
     private static int sDefaultBackgroundColor;
-    private Drawable mDefaultCardImage;
-//    String carouselBaseUrl = "http://cloudwalker-assets-prod.s3.ap-south-1.amazonaws.com/images/tiles/";
-    String carouselBaseUrl = "http://asset.s4.cloudwalker.tv/images/tiles/";
+    boolean fallback = false;
+    int imageIndex = 0;
+    private static final String TAG = "CardPresenter";
+//    String carouselBaseUrl = "http://asset.s4.cloudwalker.tv/images/tiles/";
 
 
     private static void updateCardBackgroundColor(ImageCardView view, boolean selected) {
@@ -38,7 +42,6 @@ public class CardPresenter extends Presenter {
     public ViewHolder onCreateViewHolder(ViewGroup parent) {
         sDefaultBackgroundColor = ContextCompat.getColor(parent.getContext(), R.color.transparent);
         sSelectedBackgroundColor = ContextCompat.getColor(parent.getContext(), R.color.youtube_red);
-        mDefaultCardImage = ContextCompat.getDrawable(parent.getContext(), R.drawable.movie);
 
         ImageCardView cardView = new ImageCardView(parent.getContext()) {
                     @Override
@@ -48,14 +51,11 @@ public class CardPresenter extends Presenter {
                     }
                 };
 
-        //***************for the selected strip at the bottom do this ***********
-//        BaseCardView.LayoutParams layoutParams = (BaseCardView.LayoutParams) cardView.findViewById(R.id.info_field).getLayoutParams();
-//        layoutParams.height = 10;
-//        cardView.findViewById(R.id.info_field).setLayoutParams(layoutParams);
 
         cardView.setFocusable(true);
         cardView.setCardType(ImageCardView.CARD_REGION_VISIBLE_ACTIVATED);
         cardView.setFocusableInTouchMode(true);
+        cardView.setClipToPadding(true);
         cardView.setMainImageDimensions(CARD_WIDTH, CARD_HEIGHT);
         updateCardBackgroundColor(cardView, false);
         return new ViewHolder(cardView);
@@ -64,46 +64,21 @@ public class CardPresenter extends Presenter {
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, final Object item) {
         final ImageCardView cardView = (ImageCardView) viewHolder.view;
-        CDEServiceOuterClass.Optimus movie = (CDEServiceOuterClass.Optimus) item;
-        ((ImageCardView)viewHolder.view).setTitleText(movie.getMetadata().getTitle());
+        final CDEServiceOuterClass.ContentDelivery movie = (CDEServiceOuterClass.ContentDelivery) item;
+        String title = movie.getTitle();
+        if(movie.getSeason() != null && !movie.getSeason().isEmpty()){
+            title = title + " S "+movie.getSeason()+ " E "+movie.getEpisode();
+        }
+        ((ImageCardView)viewHolder.view).setTitleText(title);
         StringBuilder contentText = new StringBuilder();
-        for(CDEServiceOuterClass.ContentAvailable p : movie.getContentAvailableList()){
+        for(CDEServiceOuterClass.PLAY p : movie.getPlayList()){
             contentText.append(p.getSource()).append(" | ");
         }
         ((ImageCardView)viewHolder.view).setContentText(contentText.toString());
-        if (!movie.getMedia().getLandscapeList().isEmpty() && !movie.getMedia().getLandscape(0).isEmpty()) {
-            Glide.with(viewHolder.view.getContext())
-                    .load(carouselBaseUrl + ((CDEServiceOuterClass.Optimus) item).getMedia().getLandscape(0))
-                    .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                    .override(CARD_WIDTH, CARD_HEIGHT)
-                    .error(R.drawable.movie)
-                    .skipMemoryCache(true)
-                    .placeholder(R.color.shimmer_bg_color)
-                    .error(R.color.shimmer_bg_color)
-                    .listener(new RequestListener<String, GlideDrawable>() {
-                        @Override
-                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            Glide.with(viewHolder.view.getContext()).load(((CDEServiceOuterClass.Optimus) item).getMedia().getLandscape(0))
-                                    .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                                    .override(CARD_WIDTH, CARD_HEIGHT)
-                                    .error(R.drawable.movie)
-                                    .skipMemoryCache(true).into(cardView.getMainImageView());
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            return false;
-                        }
-                    }).into(cardView.getMainImageView());
+        if(movie.getPosterCount() > 0){
+            imageIndex = 0;
+            loadPoster(cardView, movie.getPosterList());
         }
-    }
-
-    private int dpToPx(Context ctx, int dp) {
-        float density = ctx.getResources()
-                .getDisplayMetrics()
-                .density;
-        return Math.round((float) dp * density);
     }
 
     @Override
@@ -113,4 +88,152 @@ public class CardPresenter extends Presenter {
         cardView.setBadgeImage(null);
         cardView.setMainImage(null);
     }
+
+
+    private List<String> filterValidNActiveUrl(Context context, CDEServiceOuterClass.ContentDelivery movie){
+        List<String> result = new ArrayList<>();
+        //merging
+        for (String url: movie.getPosterList()) {
+            if(AppUtils.isServerReachable(context, url)){
+                result.add(url);
+            }
+        }
+        for (String url: movie.getPortriatList()) {
+            if(AppUtils.isServerReachable(context, url)){
+                result.add(url);
+            }
+        }
+        Log.d(TAG, "filterValidNActiveUrl: "+result.toString());
+        return result;
+    }
+
+
+
+
+    private void loadPoster(final ImageCardView cardView, final List<String> imageUrlList){
+        Log.d(TAG, "loadPoster: POSTER "+imageIndex);
+        Glide.with(cardView.getContext())
+                .load(imageUrlList.get(imageIndex))
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                .override(CARD_WIDTH, CARD_HEIGHT)
+                .skipMemoryCache(true)
+                .placeholder(R.color.shimmer_bg_color)
+                .into(new ImageViewTarget<GlideDrawable>(cardView.getMainImageView()) {
+                    @Override
+                    protected void setResource(GlideDrawable resource) {
+                        Log.d(TAG, "setResource: IMAGE SUCCESS ");
+                        cardView.getMainImageView().setImageDrawable(resource);
+                    }
+
+                    @Override
+                    public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                        super.onLoadFailed(e, errorDrawable);
+                        Log.d(TAG, "onLoadFailed: IMAGE FAILED ");
+                        if(imageIndex < imageUrlList.size()){
+                            imageIndex++;
+                            Log.d(TAG, "onLoadFailed: IMAGE TRY ");
+                            loadPoster(cardView, imageUrlList);
+                        }
+                    }
+                });
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Glide.with(cardView.getContext())
+//        .load(movie.getPosterList().get(imageIndex))
+//        .diskCacheStrategy(DiskCacheStrategy.RESULT)
+//        .override(CARD_WIDTH, CARD_HEIGHT)
+//        .error(R.drawable.movie)
+//        .skipMemoryCache(true)
+//        .placeholder(R.color.shimmer_bg_color)
+//        .error(R.color.shimmer_bg_color)
+//        .listener(new RequestListener<String, GlideDrawable>() {
+//@Override
+//public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+//        Log.d(TAG, "*****Glide onException: "+model);
+//        if(!fallback && imageIndex < (movie.getPosterList().size()-1)){
+//        Log.d(TAG, "loadPoster: trying image but failed ==> "+movie.getPosterList().get(imageIndex));
+//        imageIndex = imageIndex + 1;
+//        loadPoster(cardView, movie);
+//        return false;
+//        }
+//        for (String i: movie.getPosterList()) {
+//        Log.d(TAG, "This set didnt work out : "+i);
+//        }
+//        return false;
+//        }
+//
+//@Override
+//public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+//        Log.d(TAG, "onResourceReady: "+model);
+//        return false;
+//        }
+//        }).into(cardView.getMainImageView());
+
+
+
+
+
+
+
+
+
+
+
+//***************for the selected strip at the bottom do this ***********
+//        BaseCardView.LayoutParams layoutParams = (BaseCardView.LayoutParams) cardView.findViewById(R.id.info_field).getLayoutParams();
+//        layoutParams.height = 10;
+//        cardView.findViewById(R.id.info_field).setLayoutParams(layoutParams);
+
+
+
+
+
+//    private int dpToPx(Context ctx, int dp) {
+//        float density = ctx.getResources()
+//                .getDisplayMetrics()
+//                .density;
+//        return Math.round((float) dp * density);
+//    }
+
+
+
+
+
+
+//   Glide.with(viewHolder.view.getContext())
+//                    .load(carouselBaseUrl + (movie.getPoster(0)))
+//                    .diskCacheStrategy(DiskCacheStrategy.RESULT)
+//                    .override(CARD_WIDTH, CARD_HEIGHT)
+//                    .error(R.drawable.movie)
+//                    .skipMemoryCache(true)
+//                    .placeholder(R.color.shimmer_bg_color)
+//                    .error(R.color.shimmer_bg_color)
+//                    .listener(new RequestListener<String, GlideDrawable>() {
+//                        @Override
+//                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+//                            Glide.with(viewHolder.view.getContext()).load(movie.getPoster(0))
+//                                    .diskCacheStrategy(DiskCacheStrategy.RESULT)
+//                                    .override(CARD_WIDTH, CARD_HEIGHT)
+//                                    .error(R.drawable.movie)
+//                                    .skipMemoryCache(true).into(cardView.getMainImageView());
+//                            return false;
+//                        }
+//
+//                        @Override
+//                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+//                            return false;
+//                        }
+//                    }).into(cardView.getMainImageView());

@@ -25,6 +25,22 @@ service CDEService {
         body: "*"
       };
     }
+
+    rpc CdeClick(TileId) returns (Resp) {
+        option (google.api.http) = {
+        post:"/cdecounter"
+        body: "*"
+      };
+    }
+}
+
+
+message TileId{
+    string id = 1;
+}
+
+message Resp{
+    bool result = 1;
 }
 
 message SearchQuery{
@@ -37,7 +53,7 @@ message FilterKey {
 }
 
 message SearchResponse{
-    repeated Optimus contentTile = 1;
+    repeated ContentDelivery contentTiles = 1;
 }
 
 message SearchTextResponse{
@@ -114,4 +130,29 @@ message Optimus {
     Metadata metadata = 4;
     repeated ContentAvailable content_available = 5;
     Media media = 6;
+}
+
+
+
+message ContentDelivery {
+    string title = 10;
+    repeated string poster = 1;
+    repeated string portriat = 2;
+    repeated string video = 3;
+    double type = 4;
+    string season = 5;
+    string episode = 6;
+    bool isDetailPage = 7;
+    string contentId = 8;
+    repeated PLAY play = 9;
+}
+
+message PLAY {
+    double monetize = 7;
+    string targetid = 1;
+    string source = 2;
+    string package = 3;
+    string type = 4;
+    string target = 5;
+    string offerrefid = 6;
 }
