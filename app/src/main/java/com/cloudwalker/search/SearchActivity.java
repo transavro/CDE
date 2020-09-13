@@ -3,9 +3,6 @@ package com.cloudwalker.search;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -16,6 +13,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -31,6 +33,9 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import model.SearchFilter;
 import utils.KeyboardDataAdapter;
+
+import static utils.AppUtils.getEthMacAddress;
+import static utils.AppUtils.getSystemProperty;
 
 public class SearchActivity extends FragmentActivity implements View.OnClickListener {
 
@@ -50,13 +55,28 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
     private boolean isFromDeepLink = false;
     private String sourceToPlay = "";
     private String[] cwCanTrigger = {"youtube", "netflix", "amazon prime video", "zee5", "hotstar", "sony liv"};
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
+        initFirebase();
         init();
         resolveVskDeepLink(getIntent());
+    }
+
+
+    private void initFirebase() {
+        // Obtain the FirebaseAnalytics instance.
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        mFirebaseAnalytics.setUserProperty("emac", getEthMacAddress());
+        mFirebaseAnalytics.setUserProperty("mboard", getSystemProperty("ro.cvte.boardname"));
+        mFirebaseAnalytics.setUserProperty("panel", getSystemProperty("ro.cvte.panelname"));
+        mFirebaseAnalytics.setUserProperty("model", getSystemProperty("ro.product.model"));
+        mFirebaseAnalytics.setUserProperty("cotaversion", getSystemProperty("ro.cloudwalker.cota.version"));
+        mFirebaseAnalytics.setUserProperty("fotaversion", getSystemProperty("ro.cvte.ota.version"));
+        mFirebaseAnalytics.setUserProperty("package", BuildConfig.APPLICATION_ID);
     }
 
 
@@ -216,7 +236,8 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
 
         edtSearchView.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -271,11 +292,27 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
                 .build();
 
         serverCall(searchQuery);
+    }
 
+    private void logSearchQuery(String searchQuery){
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.SEARCH_TERM, searchQuery);
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SEARCH, bundle);
+    }
+
+    protected void logContentSelected(String contentID, String title) {
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, contentID);
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, title);
+        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "cde_tile");
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
     }
 
 
     private void serverCall(CDEServiceOuterClass.SearchQuery query) {
+        //loging analytics
+        logSearchQuery(query.getQuery());
+
         loadingProgressBar.setVisibility(View.VISIBLE);
         cdeServiceStub.search(query, new StreamObserver<CDEServiceOuterClass.SearchResponse>() {
             List<CDEServiceOuterClass.ContentDelivery> contents = new ArrayList<>();
@@ -311,6 +348,7 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
                 loadingProgressBar.setVisibility(View.INVISIBLE);
                 searchFragment.refreshData(tmp);
                 if (isSearchNPlay && tmp.size() > 0) {
+                    logContentSelected(tmp.get(0).getContentId(), tmp.get(0).getTitle());
                     searchFragment.handleTileClick(tmp.get(0), SearchActivity.this, sourceToPlay);
                 }
             }
@@ -343,6 +381,7 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
         }
         super.onPause();
     }
+
 
     @Override
     protected void onDestroy() {

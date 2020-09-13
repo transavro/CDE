@@ -1,13 +1,21 @@
 package utils;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
+import com.cloudwalker.search.SearchActivity;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 public class AppUtils {
 
     private static final String TAG = "AppUtils";
+    private static volatile Method set = null;
+
 
     static public boolean isServerReachable(Context context, String url) {
         //method 1
@@ -21,28 +29,63 @@ public class AppUtils {
             e.printStackTrace();
             return false;
         }
+    }
 
+    public static String getSystemProperty(String key) {
+        String value = null;
+        try {
+            value = (String) Class.forName("android.os.SystemProperties")
+                    .getMethod("get", String.class).invoke(null, key);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
 
-        //method 2
-//        ConnectivityManager connMan = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-//        NetworkInfo netInfo = connMan.getActiveNetworkInfo();
-//        if (netInfo != null && netInfo.isConnected()) {
-//            try {
-//                URL urlServer = new URL(url);
-//                HttpURLConnection urlConn = (HttpURLConnection) urlServer.openConnection();
-//                urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
-//                urlConn.connect();
-//                if (urlConn.getResponseCode() == 200) {
-//                    return true;
-//                } else {
-//                    return false;
-//                }
-//            } catch (MalformedURLException e1) {
-//                return false;
-//            } catch (IOException e) {
-//                return false;
-//            }
-//        }
-//        return false;
+    public static void setSystemProperty(String prop, String value) {
+        try {
+            if (null == set) {
+                synchronized (SearchActivity.class) {
+                    if (null == set) {
+                        Class<?> cls = Class.forName("android.os.SystemProperties");
+                        set = cls.getDeclaredMethod("set", new Class<?>[]{String.class, String.class});
+                    }
+                }
+            }
+            set.invoke(null, new Object[]{prop, value});
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String getEthMacAddress() {
+        try {
+            return loadFileAsString().toUpperCase().substring(0, 17);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    private static String loadFileAsString() throws java.io.IOException {
+        StringBuilder fileData = new StringBuilder(1000);
+        BufferedReader reader = new BufferedReader(new FileReader("/sys/class/net/eth0/address"));
+        char[] buf = new char[1024];
+        int numRead;
+        while ((numRead = reader.read(buf)) != -1) {
+            String readData = String.valueOf(buf, 0, numRead);
+            fileData.append(readData);
+        }
+        reader.close();
+        return fileData.toString();
+    }
+
+    public static boolean isPackageInstalled(String packagename, PackageManager packageManager) {
+        try {
+            packageManager.getPackageInfo(packagename, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
     }
 }

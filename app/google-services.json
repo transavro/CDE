@@ -1,0 +1,230 @@
+{
+  "project_info": {
+    "project_number": "556726389740",
+    "firebase_url": "https://cloudwalker-app-suite.firebaseio.com",
+    "project_id": "cloudwalker-app-suite",
+    "storage_bucket": "cloudwalker-app-suite.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556726389740:android:76fb0a042f6699a9a70ec9",
+        "android_client_info": {
+          "package_name": "tv.cloudwalker.alexa.vsk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQsl9m1lRVSVIigS0rJd350Wer885H-8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556726389740:android:6b2961bd198da2a6a70ec9",
+        "android_client_info": {
+          "package_name": "tv.cloudwalker.appstore"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQsl9m1lRVSVIigS0rJd350Wer885H-8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556726389740:android:111be1708641c1d2a70ec9",
+        "android_client_info": {
+          "package_name": "tv.cloudwalker.auth"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "556726389740-oprmugqiphio294fpc91f6rhujvt50ju.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "tv.cloudwalker.auth",
+            "certificate_hash": "e1521410c3c033607877d0e45750fe686b406fb2"
+          }
+        },
+        {
+          "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQsl9m1lRVSVIigS0rJd350Wer885H-8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556726389740:android:12c87193800a9adaa70ec9",
+        "android_client_info": {
+          "package_name": "tv.cloudwalker.companion"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQsl9m1lRVSVIigS0rJd350Wer885H-8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556726389740:android:229352084768a004a70ec9",
+        "android_client_info": {
+          "package_name": "tv.cloudwalker.player"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQsl9m1lRVSVIigS0rJd350Wer885H-8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556726389740:android:a6e326fe12490fd9a70ec9",
+        "android_client_info": {
+          "package_name": "tv.cloudwalker.search"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "556726389740-3bkf4q5koh41eqc4pigaceuqed2fu78b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "tv.cloudwalker.search",
+            "certificate_hash": "4b62726fb47b82b4367248bb12d508a7f278b000"
+          }
+        },
+        {
+          "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQsl9m1lRVSVIigS0rJd350Wer885H-8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556726389740:android:b12b322b62818daba70ec9",
+        "android_client_info": {
+          "package_name": "tv.cloudwalker.updater"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQsl9m1lRVSVIigS0rJd350Wer885H-8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "556726389740-uedjlnt5le6c27l0tltv8lbpv6feqjta.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
