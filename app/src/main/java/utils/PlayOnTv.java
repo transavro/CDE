@@ -38,7 +38,9 @@ public class PlayOnTv {
         if(context == null || packageName == null || deeplink == null) return "Not able to play.";
 
         //manupilate acoording to CW
-        manupilateCW(packageName, deeplink);
+        String[] result = manupilateCW(packageName, deeplink);
+        packageName = result[0];
+        deeplink = result[1];
 
         //check if the app is installed or not
         if(!isPackageInstalled(packageName, context.getPackageManager())){
@@ -52,7 +54,7 @@ public class PlayOnTv {
 
 
 
-    private void manupilateCW(String packageName, String deeplink) {
+    private String[] manupilateCW(String packageName, String deeplink) {
         Log.d(TAG,"CONTENT PLAY START ===>>>  "+ packageName + "      "+ deeplink);
         if (deeplink == null) {
             deeplink = "";
@@ -99,6 +101,7 @@ public class PlayOnTv {
 
         //playing...
         Log.d(TAG,"CONTENT PLAY END ===>>>  "+ packageName + "      "+ deeplink);
+        return new String[]{packageName, deeplink};
     }
 
     private String play(String packageName, String deeplink){
