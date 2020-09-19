@@ -30,7 +30,6 @@ public class CardPresenter extends Presenter {
     boolean fallback = false;
     int imageIndex = 0;
     private static final String TAG = "CardPresenter";
-//    String carouselBaseUrl = "http://asset.s4.cloudwalker.tv/images/tiles/";
 
 
     private static void updateCardBackgroundColor(ImageCardView view, boolean selected) {
@@ -62,6 +61,23 @@ public class CardPresenter extends Presenter {
         return new ViewHolder(cardView);
     }
 
+    private String getSeperatedValuesWithHeader(String seperator, String header, ArrayList<String> list) {
+        String values = "";
+        for (String value : list) {
+            if (value.length() > 0) {
+                values += value + seperator;
+            } else {
+                return "";
+            }
+        }
+        values = values.replaceAll("[" + seperator + "] $", "");
+        if (header.length() > 0) {
+            return (header + " : " + values);
+        } else {
+            return values;
+        }
+    }
+
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, final Object item) {
         final ImageCardView cardView = (ImageCardView) viewHolder.view;
@@ -71,11 +87,11 @@ public class CardPresenter extends Presenter {
             title = title + " S "+movie.getSeason()+ " E "+movie.getEpisode();
         }
         ((ImageCardView)viewHolder.view).setTitleText(title);
-        StringBuilder contentText = new StringBuilder();
+        ArrayList<String> subText = new ArrayList<>();
         for(CDEServiceOuterClass.PLAY p : movie.getPlayList()){
-            contentText.append(p.getSource()).append(" | ");
+            subText.add(p.getSource());
         }
-        ((ImageCardView)viewHolder.view).setContentText(contentText.toString());
+        ((ImageCardView)viewHolder.view).setContentText(getSeperatedValuesWithHeader(" | ", "", subText));
         if(movie.getPosterCount() > 0){
             imageIndex = 0;
             loadPoster(cardView, movie.getPosterList());

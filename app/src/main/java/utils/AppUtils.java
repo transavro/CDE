@@ -4,17 +4,14 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-import com.cloudwalker.search.SearchActivity;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 public class AppUtils {
 
     private static final String TAG = "AppUtils";
-    private static volatile Method set = null;
 
 
     static public boolean isServerReachable(Context context, String url) {
@@ -42,22 +39,6 @@ public class AppUtils {
         return value;
     }
 
-    public static void setSystemProperty(String prop, String value) {
-        try {
-            if (null == set) {
-                synchronized (SearchActivity.class) {
-                    if (null == set) {
-                        Class<?> cls = Class.forName("android.os.SystemProperties");
-                        set = cls.getDeclaredMethod("set", new Class<?>[]{String.class, String.class});
-                    }
-                }
-            }
-            set.invoke(null, new Object[]{prop, value});
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }
-
     public static String getEthMacAddress() {
         try {
             return loadFileAsString().toUpperCase().substring(0, 17);
@@ -81,6 +62,7 @@ public class AppUtils {
     }
 
     public static boolean isPackageInstalled(String packagename, PackageManager packageManager) {
+        Log.i(TAG, "isPackageInstalled: "+packagename);
         try {
             packageManager.getPackageInfo(packagename, 0);
             return true;
@@ -88,4 +70,6 @@ public class AppUtils {
             return false;
         }
     }
+
+
 }

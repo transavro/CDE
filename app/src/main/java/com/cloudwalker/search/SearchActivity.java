@@ -345,7 +345,12 @@ public class SearchActivity extends FragmentActivity implements View.OnClickList
                 long end = System.currentTimeMillis();
                 Log.d(TAG, "onCompleted: FILTER TIME ---> " + (end - start) + "  ms");
                 Log.d(TAG, "onNext:AFTER ====>>> " + tmp.size());
-                loadingProgressBar.setVisibility(View.INVISIBLE);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadingProgressBar.setVisibility(View.INVISIBLE);
+                    }
+                });
                 searchFragment.refreshData(tmp);
                 if (isSearchNPlay && tmp.size() > 0) {
                     logContentSelected(tmp.get(0).getContentId(), tmp.get(0).getTitle());
